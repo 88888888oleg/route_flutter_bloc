@@ -1,0 +1,16 @@
+name: route_flutter_bloc
+description: Flutter widgets that make it easy to implement the BLoC (Business Logic Component) design pattern with route handling.
+version: 9.1.1
+
+environment:
+  sdk: ">=2.14.0 <4.0.0"
+
+dependencies:
+  bloc: ^9.0.0
+  flutter:
+    sdk: flutter
+  provider: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
