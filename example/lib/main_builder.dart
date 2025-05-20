@@ -55,6 +55,7 @@ class _FirstPageState extends State<FirstPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             RouteBlocBuilder<CounterCubit, int>(
+              observer: routeFlutterBlocObserver,
               forceClassicBuilder: classicBehavior,
               rebuildOnResume: rebuildOnResumed,
               builder: (_, state) {

@@ -1,5 +1,7 @@
 name: route_flutter_bloc
-description: Flutter widgets that make it easy to implement the BLoC (Business Logic Component) design pattern with route handling.
+description: Improve Flutter BLoC performance with navigation-aware widgets. Avoid rebuilds and side-effects when screens are hidden, and automatically respond when the page becomes visible again — but only if the state actually changed while it was hidden. Smart behavior, full control, zero boilerplate.
+repository: https://github.com/88888888oleg/route_flutter_bloc
+topics: [bloc, state-management]
 version: 9.1.1
 
 environment:
