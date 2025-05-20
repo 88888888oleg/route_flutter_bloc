@@ -67,33 +67,7 @@ class _FirstPageState extends State<FirstPage> {
           },
         ),
       ],
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Page 1 - MultiBlocListener ACTIVE')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Counter: $_counter'),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () => context.read<CounterCubit>().increment(),
-                child: const Text('Increment Counter'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (_) => const SecondPage()),
-                  );
-                },
-                child: const Text('Go to Second Page'),
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: SizedBox(),
     );
   }
 }
