@@ -10,8 +10,7 @@ Will this package work with your navigation system? - If RouteAware works for yo
 In a typical Flutter app using flutter_bloc, your BlocBuilder or BlocListener widgets always work, even when the page is not visible.  
 This can lead to:  
 • 🔁 Unnecessary rebuilds that waste performance  
-• ⚠️ Side-effects from BlocListener firing at the wrong time  
-• 🐌 Slower UI if you’re triggering manual UI updates through BlocListener
+• ⚠️ Side-effects from BlocListener firing at the wrong time
 
 ## How this package solves it
 
@@ -38,7 +37,7 @@ For example:
 • loaded → loading → loaded → Triggers ✅  
 • loaded → loaded → No trigger ❌
 
-This keeps performance high and avoids wasting rebuilds.
+The widgets behave according to the standard BLoC paradigm.
 
 ## Want the original behavior?
 
@@ -49,15 +48,6 @@ You can make any widget behave like its flutter_bloc counterpart by enabling:
 • forceClassicSelector: true
 
 This disables the route-aware logic and makes widgets work always, regardless of screen visibility.
-
-## 🧠 Widget Behavior Based on State and Visibility
-
-| Page Visible? | State Changed? | Example Transitions           | Flag: rebuildOnResume / triggerOnResumed | Will Trigger? | Explanation                                                        |
-|---------------|----------------|-------------------------------|-------------------------------------------|----------------|--------------------------------------------------------------------|
-| ✅ Yes        | ✅ Yes          | loaded → loading → loaded     | irrelevant                                | ✅ Yes         | The page is visible, all changes trigger the widget as expected.  |
-| ✅ Yes        | ❌ No           | loaded → loaded               | irrelevant                                | ❌ No          | No actual state change – widget does not trigger (optimization).  |
-| ❌ No         | ✅ Yes          | loaded → loading → loaded     | ❌ false                                   | ❌ No          | State changed, but flag is off – widget stays silent.             |
-| ❌ No         | ✅ Yes          | loaded → loading → loaded     | ✅ true                                    | ✅ Yes (once)  | State changed while hidden – widget triggers once on resume.      |
 
 ## 🧭 Route Awareness Setup
 
