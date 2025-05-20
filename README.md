@@ -26,6 +26,7 @@ Here’s what you get:
 
 BY DEFAULT, THESE WIDGETS STAY QUIET WHEN COMING BACK TO THE SCREEN.  
 BUT IF YOU WANT THEM TO REACT ON RESUME, JUST ENABLE A FLAG:
+
 • rebuildOnResume: true for RouteBlocBuilder, RouteBlocConsumer, RouteBlocSelector  
 • triggerOnResumed: true for RouteBlocListener, RouteBlocConsumer
 
