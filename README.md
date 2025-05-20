@@ -4,7 +4,7 @@ React only when needed. Improve performance without changing your app’s archit
 route_flutter_bloc is a collection of enhanced versions of standard flutter_bloc widgets like BlocBuilder, BlocListener, and others.  
 These widgets are navigation-aware — they know when your page is on screen or hidden inside the Navigator stack, and behave accordingly.
 Will this package work with your navigation system? - If RouteAware works for you, then this package will work too.
-✅ Why use it?
+## Why use it?
 
 In a typical Flutter app using flutter_bloc, your BlocBuilder or BlocListener widgets always work, even when the page is not visible.  
 This can lead to:  
@@ -12,7 +12,7 @@ This can lead to:
 • ⚠️ Side-effects from BlocListener firing at the wrong time  
 • 🐌 Slower UI if you’re triggering manual UI updates through BlocListener
 
-💡 How this package solves it
+## How this package solves it
 
 This package upgrades the default behavior. All widgets behave the same as in flutter_bloc, except when the screen is hidden.
 
@@ -38,7 +38,7 @@ For example:
 
 This keeps performance high and avoids wasting rebuilds.
 
-🧠 Want the original behavior?
+## Want the original behavior?
 
 No problem.  
 You can make any widget behave like its flutter_bloc counterpart by enabling:  
