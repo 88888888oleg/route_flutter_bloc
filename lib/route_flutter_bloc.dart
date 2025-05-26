@@ -11,3 +11,4 @@ export './src/route_bloc_provider.dart';
 export './src/route_bloc_selector.dart';
 export './src/route_multi_bloc_listener.dart';
 export './src/route_multi_bloc_provider.dart';
+export './src/route_observer_provider.dart';

@@ -266,8 +266,6 @@ If you’re already using flutter_bloc in your project, you can continue using t
 If you like the idea of improving the BLoC pattern and want to connect —  
 feel free to add me on [LinkedIn](https://www.linkedin.com/in/olegstepanchenko/).
 
-Let’s share ideas and build better tools for Flutter together!
-
 ## ☕ Support
 
 If you find this package useful, you can support the development by buying me a coffee!  
