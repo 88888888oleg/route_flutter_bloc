@@ -37,7 +37,6 @@ class CounterCubit extends Cubit<int> {
   void increment() => emit(state + 1);
 }
 
-
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
 
@@ -67,7 +66,9 @@ class _FirstPageState extends State<FirstPage> {
           },
         ),
       ],
-      child: SizedBox(),
+      child: SizedBox(
+        child: Text('$_counter'),
+      ),
     );
   }
 }
