@@ -2,7 +2,7 @@ name: route_flutter_bloc
 description: Improve Flutter BLoC performance with navigation-aware widgets. Skip rebuilds and side-effects when screens are hidden. React on resume only if state changed.
 repository: https://github.com/88888888oleg/route_flutter_bloc
 topics: [bloc, state-management]
-version: 9.2.1
+version: 9.2.0
 
 environment:
   sdk: ">=2.14.0 <4.0.0"
