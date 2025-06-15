@@ -1,9 +1,5 @@
-import 'package:bloc/bloc.dart';
 import 'package:flutter/widgets.dart';
-import 'package:provider/provider.dart';
 import 'package:route_flutter_bloc/route_flutter_bloc.dart';
-import 'package:route_flutter_bloc/src/route_bloc_listener.dart';
-import 'package:route_flutter_bloc/src/route_observer_provider.dart';
 
 /// {@template route_bloc_widget_selector}
 /// Signature for a function that selects a value of type [T] from a BLoC state [S].
@@ -54,7 +50,7 @@ class RouteBlocSelector<B extends StateStreamable<S>, S, T>
     required this.builder,
     this.observer,
     this.bloc,
-    this.rebuildOnResume = false,
+    this.rebuildOnResume = true,
     this.forceClassicSelector = false,
     Key? key,
   }) : super(key: key);
@@ -124,6 +120,12 @@ class _RouteBlocSelectorState<B extends StateStreamable<S>, S, T>
       _selectedState = widget.selector(_bloc.state);
       _subscribe();
     }
+    final oldObserver = oldWidget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocBuilder');
+    final currentObserver = widget.observer ?? oldObserver;
+    if (oldObserver != currentObserver) {
+      _observer = currentObserver;
+    }
   }
 
   @override
@@ -140,6 +142,11 @@ class _RouteBlocSelectorState<B extends StateStreamable<S>, S, T>
       _bloc = bloc;
       _selectedState = widget.selector(_bloc.state);
       _subscribe();
+    }
+    final observer = widget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocBuilder');
+    if (_observer != observer) {
+      _observer = observer;
     }
   }
 

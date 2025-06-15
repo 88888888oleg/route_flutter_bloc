@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:route_flutter_bloc/route_flutter_bloc.dart';
-import 'package:flutter/widgets.dart';
-import 'package:route_flutter_bloc/src/route_bloc_consumer.dart';
-import 'package:route_flutter_bloc/src/route_observer_provider.dart';
 
 final RouteObserver<Route<dynamic>> routeFlutterBlocObserver =
     RouteObserver<Route<dynamic>>();

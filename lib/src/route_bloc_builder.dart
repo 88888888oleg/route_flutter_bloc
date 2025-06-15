@@ -85,7 +85,7 @@ class RouteBlocBuilder<B extends StateStreamable<S>, S>
     Key? key,
     B? bloc,
     RouteBlocBuilderCondition<S>? buildWhen,
-    bool rebuildOnResume = false,
+    bool rebuildOnResume = true,
     bool forceClassicBuilder = false,
   }) : super(
           key: key,
@@ -130,7 +130,7 @@ abstract class RouteBlocBuilderBase<B extends StateStreamable<S>, S>
     this.observer,
     this.bloc,
     this.buildWhen,
-    this.rebuildOnResume = false,
+    this.rebuildOnResume = true,
     this.forceClassicBuilder = false,
     Key? key,
   }) : super(key: key);
@@ -174,7 +174,7 @@ class _RouteBlocBuilderBaseState<B extends StateStreamable<S>, S>
   @override
   void initState() {
     super.initState();
-    _observer = _observer = widget.observer ??
+    _observer = widget.observer ??
         RouteObserverProvider.of(context, widgetName: 'RouteBlocBuilder');
 
     _bloc = widget.bloc ?? context.read<B>();
@@ -190,6 +190,12 @@ class _RouteBlocBuilderBaseState<B extends StateStreamable<S>, S>
       _bloc = currentBloc;
       _state = _bloc.state;
     }
+    final oldObserver = oldWidget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocBuilder');
+    final currentObserver = widget.observer ?? oldObserver;
+    if (oldObserver != currentObserver) {
+      _observer = currentObserver;
+    }
   }
 
   @override
@@ -199,6 +205,11 @@ class _RouteBlocBuilderBaseState<B extends StateStreamable<S>, S>
     if (_bloc != bloc) {
       _bloc = bloc;
       _state = _bloc.state;
+    }
+    final observer = widget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocBuilder');
+    if (_observer != observer) {
+      _observer = observer;
     }
   }
 

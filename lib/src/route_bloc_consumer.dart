@@ -101,11 +101,14 @@ class RouteBlocConsumer<B extends StateStreamable<S>, S>
     this.bloc,
     this.buildWhen,
     this.listenWhen,
-    this.rebuildOnResume = false,
+    this.rebuildOnResume = true,
     this.triggerListenerOnResume = false,
     this.forceClassicListener = false,
     this.forceClassicBuilder = false,
-
+    this.didPush,
+    this.didPushNext,
+    this.didPop,
+    this.didPopNext,
     Key? key,
   }) : super(key: key);
 
@@ -144,6 +147,29 @@ class RouteBlocConsumer<B extends StateStreamable<S>, S>
   ///
   /// This disables [RouteObserver]-based behavior.
   final bool forceClassicBuilder;
+
+  /// Called when the current route has been pushed onto the navigator.
+  ///
+  /// This is equivalent to `RouteAware.didPush`. Useful for triggering side effects
+  /// when the screen becomes visible for the first time.
+  final VoidCallback? didPush;
+
+  /// Called when a new route has been pushed on top of the current one.
+  ///
+  /// This is equivalent to `RouteAware.didPushNext`. Useful for pausing or hiding
+  /// UI elements when the current screen is no longer on top.
+  final VoidCallback? didPushNext;
+
+  /// Called when the current route has been popped and removed from the navigator.
+  ///
+  /// This is equivalent to `RouteAware.didPop`. Useful for cleanup or analytics.
+  final VoidCallback? didPop;
+
+  /// Called when a top route has been popped and the current route is again visible.
+  ///
+  /// This is equivalent to `RouteAware.didPopNext`. Useful for resuming listeners,
+  /// refreshing UI, or processing deferred state updates.
+  final VoidCallback? didPopNext;
 
   @override
   State<RouteBlocConsumer<B, S>> createState() =>
@@ -207,8 +233,7 @@ class _RouteBlocConsumerState<B extends StateStreamable<S>, S>
   @override
   void initState() {
     super.initState();
-    _observer =
-        _observer = widget.observer ??
+    _observer = _observer = widget.observer ??
         RouteObserverProvider.of(context, widgetName: 'RouteBlocConsumer');
     _bloc = widget.bloc ?? context.read<B>();
   }
@@ -220,6 +245,11 @@ class _RouteBlocConsumerState<B extends StateStreamable<S>, S>
     if (_bloc != bloc) {
       _bloc = bloc;
     }
+    final observer = widget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocConsumer');
+    if (_observer != observer) {
+      _observer = observer;
+    }
   }
 
   @override
@@ -229,6 +259,12 @@ class _RouteBlocConsumerState<B extends StateStreamable<S>, S>
     final newBloc = widget.bloc ?? oldBloc;
     if (oldBloc != newBloc) {
       _bloc = newBloc;
+    }
+    final oldObserver = oldWidget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocConsumer');
+    final currentObserver = widget.observer ?? oldObserver;
+    if (oldObserver != currentObserver) {
+      _observer = currentObserver;
     }
   }
 
@@ -245,6 +281,10 @@ class _RouteBlocConsumerState<B extends StateStreamable<S>, S>
       forceClassicListener: widget.forceClassicListener,
       listenWhen: widget.listenWhen,
       listener: widget.listener,
+      didPush: widget.didPush,
+      didPushNext: widget.didPushNext,
+      didPop: widget.didPop,
+      didPopNext: widget.didPopNext,
       child: RouteBlocBuilder<B, S>(
         bloc: _bloc,
         observer: _observer,

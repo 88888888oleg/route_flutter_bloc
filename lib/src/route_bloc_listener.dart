@@ -64,6 +64,10 @@ class RouteBlocListener<B extends StateStreamable<S>, S>
     RouteObserver<Route<dynamic>>? observer,
     bool triggerOnResumed = false,
     bool forceClassicListener = false,
+    VoidCallback? didPush,
+    VoidCallback? didPushNext,
+    VoidCallback? didPop,
+    VoidCallback? didPopNext,
   }) : super(
           key: key,
           bloc: bloc,
@@ -73,6 +77,10 @@ class RouteBlocListener<B extends StateStreamable<S>, S>
           observer: observer,
           triggerOnResumed: triggerOnResumed,
           forceClassicListener: forceClassicListener,
+          didPush: didPush,
+          didPushNext: didPushNext,
+          didPop: didPop,
+          didPopNext: didPopNext,
         );
 
   @override
@@ -98,6 +106,10 @@ abstract class RouteBlocListenerBase<B extends StateStreamable<S>, S>
     this.observer,
     this.triggerOnResumed = false,
     this.forceClassicListener = false,
+    this.didPush,
+    this.didPushNext,
+    this.didPop,
+    this.didPopNext,
   }) : super(key: key, child: child);
 
   /// The widget below this listener in the widget tree.
@@ -138,6 +150,29 @@ abstract class RouteBlocListenerBase<B extends StateStreamable<S>, S>
   /// This disables [RouteObserver]-based behavior.
   final bool forceClassicListener;
 
+  /// Called when the current route has been pushed onto the navigator.
+  ///
+  /// This is equivalent to `RouteAware.didPush`. Useful for triggering side effects
+  /// when the screen becomes visible for the first time.
+  final VoidCallback? didPush;
+
+  /// Called when a new route has been pushed on top of the current one.
+  ///
+  /// This is equivalent to `RouteAware.didPushNext`. Useful for pausing or hiding
+  /// UI elements when the current screen is no longer on top.
+  final VoidCallback? didPushNext;
+
+  /// Called when the current route has been popped and removed from the navigator.
+  ///
+  /// This is equivalent to `RouteAware.didPop`. Useful for cleanup or analytics.
+  final VoidCallback? didPop;
+
+  /// Called when a top route has been popped and the current route is again visible.
+  ///
+  /// This is equivalent to `RouteAware.didPopNext`. Useful for resuming listeners,
+  /// refreshing UI, or processing deferred state updates.
+  final VoidCallback? didPopNext;
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -163,33 +198,57 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
   RouteObserver<Route<dynamic>>? _observer;
   S? _deferredState;
   bool _isActiveRoute = true;
+  String? _routeName;
+  late final String? Function(String? route) _selfTriggerCallback;
 
   @override
   void initState() {
     super.initState();
     _bloc = widget.bloc ?? context.read<B>();
     _previousState = _bloc.state;
+    if (!widget.forceClassicListener) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!widget.forceClassicListener) {
+          _observer = widget.observer ??
+              RouteObserverProvider.of(context,
+                  widgetName: 'RouteBlocListener');
+
+          final route = ModalRoute.of(context);
+          if (route is PageRoute) {
+            _observer?.subscribe(this, route);
+          }
+
+          _routeName = ModalRoute.of(context)?.settings.name;
+          final blocker = RouteObserverProvider.blockerOf(context);
+
+          _selfTriggerCallback = (String? incomingRoute) {
+            final allowTrigger = incomingRoute == _routeName;
+            _maybeDispatchDeferred(allowTrigger: allowTrigger);
+            if (widget.didPopNext != null && allowTrigger) {
+              widget.didPopNext!();
+            }
+            return _routeName;
+          };
+
+          blocker?.addTriggerCallback(_selfTriggerCallback);
+        }
+      });
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    if (!widget.forceClassicListener) {
-      _observer = widget.observer ??
-          RouteObserverProvider.of(context, widgetName: 'RouteBlocListener');
-
-      final route = ModalRoute.of(context);
-      if (route is PageRoute) {
-        _observer?.subscribe(this, route);
-      }
-    }
-
     final currentBloc = widget.bloc ?? context.read<B>();
     _unsubscribe();
     _bloc = currentBloc;
     _previousState = _bloc.state;
     _subscribe();
+    final observer = widget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocListener');
+    if (_observer != observer) {
+      _observer = observer;
+    }
   }
 
   @override
@@ -203,6 +262,12 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
       _bloc = newBloc;
       _previousState = _bloc.state;
       _subscribe();
+    }
+    final oldObserver = oldWidget.observer ??
+        RouteObserverProvider.of(context, widgetName: 'RouteBlocListener');
+    final currentObserver = widget.observer ?? oldObserver;
+    if (oldObserver != currentObserver) {
+      _observer = currentObserver;
     }
   }
 
@@ -239,8 +304,8 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
     _subscription = null;
   }
 
-  void _maybeDispatchDeferred() {
-    if (_deferredState != null) {
+  void _maybeDispatchDeferred({bool allowTrigger = true}) {
+    if (_deferredState != null && allowTrigger) {
       final state = _deferredState!;
       _deferredState = null;
       widget.listener(context, state);
@@ -251,22 +316,36 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
   void didPush() {
     _isActiveRoute = true;
     _maybeDispatchDeferred();
+    if (widget.didPush != null) {
+      widget.didPush!();
+    }
   }
 
   @override
   void didPopNext() {
     _isActiveRoute = true;
-    _maybeDispatchDeferred();
+    final allowTrigger =
+        RouteObserverProvider.blockerOf(context)?.isAllowed ?? true;
+    _maybeDispatchDeferred(allowTrigger: allowTrigger);
+    if (widget.didPopNext != null && allowTrigger) {
+      widget.didPopNext!();
+    }
   }
 
   @override
   void didPushNext() {
     _isActiveRoute = false;
+    if (widget.didPushNext != null) {
+      widget.didPushNext!();
+    }
   }
 
   @override
   void didPop() {
     _isActiveRoute = false;
+    if (widget.didPop != null) {
+      widget.didPop!();
+    }
   }
 
   @override

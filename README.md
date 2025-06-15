@@ -115,6 +115,16 @@ RouteBlocListener<CounterCubit, int>(
   },
 );
 ```
+**RouteBlocListener now supports additional route lifecycle callbacks based on RouteAware:**
+```dart
+RouteBlocListener<MyBloc, MyState>(
+didPush: () => print('Route was pushed'),
+didPushNext: () => print('Another route was pushed on top'),
+didPop: () => print('Route was popped'),
+didPopNext: () => print('Returned to this route'),
+...
+)
+```
 
 ## RouteBlocBuilder behavior
 
@@ -123,14 +133,14 @@ If the page is hidden inside the navigator stack, it does not rebuild.
 
 You can configure its behavior with:
 ```dart
-bool rebuildOnResume = false; // Rebuild once when returning to screen, only if state changed - false by default
+bool rebuildOnResume = true; // Rebuild once when returning to screen, only if state changed - true by default
 bool forceClassicBuilder = false; // Always rebuild like in flutter_bloc - false by default
 ```
 
 **Example usage**
 ```dart
 RouteBlocBuilder<CounterCubit, int>(
-  rebuildOnResume: true,
+  rebuildOnResume: false,
   forceClassicBuilder: false,
   builder: (context, state) {
     return Text('State: $state');
@@ -145,7 +155,7 @@ If the page is hidden inside the navigator stack, neither builder nor listener w
 
 You can configure its behavior with:
 ```dart
-bool rebuildOnResume = false; // Rebuild once when returning to screen, only if state changed - false by default
+bool rebuildOnResume = true; // Rebuild once when returning to screen, only if state changed - true by default
 bool triggerOnResumed = false; // Trigger listener once when returning, only if state changed - false by default
 bool forceClassicBuilder = false; // Always rebuild like in flutter_bloc - false by default
 bool forceClassicListener = false; // Always listen like in flutter_bloc - false by default
@@ -154,7 +164,7 @@ bool forceClassicListener = false; // Always listen like in flutter_bloc - false
 **Example usage**
 ```dart
 RouteBlocConsumer<CounterCubit, int>(
-  rebuildOnResume: true,
+  rebuildOnResume: false,
   triggerOnResumed: true,
   forceClassicBuilder: false,
   forceClassicListener: false,
@@ -176,7 +186,7 @@ If the page is hidden inside the navigator stack, it stays inactive.
 
 You can configure its behavior with:
 ```dart
-bool rebuildOnResume = false; // Rebuild once when returning to screen, only if selected value changed - false by default
+bool rebuildOnResume = true; // Rebuild once when returning to screen, only if selected value changed - true by default
 bool forceClassicSelector = false; // Always rebuild like in flutter_bloc - false by default
 ```
 
@@ -184,7 +194,7 @@ bool forceClassicSelector = false; // Always rebuild like in flutter_bloc - fals
 ```dart
 RouteBlocSelector<CounterCubit, int, String>(
   selector: (state) => 'Value: $state',
-  rebuildOnResume: true,
+  rebuildOnResume: false,
   forceClassicSelector: false,
   builder: (context, value) {
     return Text(value);
@@ -260,6 +270,50 @@ If you don’t provide a `RouteObserver`, the system will try to find one from c
 are copies of the standard flutter_bloc widgets.
 They are included for convenience in case you’re using this package standalone.
 If you’re already using flutter_bloc in your project, you can continue using the original BlocProvider and MultiBlocProvider widgets — they will work just fine.
+
+## popUntilGuarded
+
+**Use Navigator.popUntilGuarded instead of Navigator.popUntil when navigating back through the route stack.**
+```dart
+Navigator.of(context).popUntilGuarded('/home');
+```
+**This is a safe alternative to:**
+```dart
+Navigator.of(context).popUntil((route) => route.settings.name == '/home');
+```
+**Unlike popUntil, which may skip or break listener logic, popUntilGuarded:**
+•	Locks route-aware effects during the transition
+•	Delays listener execution until the target route is fully active
+•	Prevents premature or duplicated didPopNext calls
+
+**⚠️ The target route must have a name (RouteSettings.name) assigned when pushed.**
+```dart
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => const HomePage(),
+    settings: const RouteSettings(name: '/home'),
+  ),
+);
+```
+```dart
+MaterialApp(
+  initialRoute: '/home',
+  onGenerateRoute: (settings) {
+    if (settings.name == '/home') {
+      return MaterialPageRoute(
+        builder: (_) => const HomePage(),
+        settings: RouteSettings(name: '/home'),
+      );
+    }
+    // ...
+  },
+)
+```
+
+**When to use**
+
+Use Navigator.popUntilGuarded for multi-page back navigation (e.g. from page 3 to page 1) when working with RouteBlocListener.
 
 ## 💬 Social
 
