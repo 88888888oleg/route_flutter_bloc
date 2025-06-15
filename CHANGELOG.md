@@ -1,4 +1,4 @@
-# 9.2.1
+# 9.2.0
 
 - Added a method for safely popping a series of routes: popUntilGuarded. rebuildOnResume now true for builders.
 
