@@ -285,6 +285,11 @@ Navigator.of(context).popUntil((route) => route.settings.name == '/home');
 •	Locks route-aware effects during the transition
 •	Delays listener execution until the target route is fully active
 •	Prevents premature or duplicated didPopNext calls
+When using Navigator.popUntilGuarded('/routeName'), only one route in the stack (the one matched by the name) will receive didPopNext — and only after the first frame.
+All intermediate routes will not receive didPopNext.
+This is intentional and prevents unexpected re-activation logic.
+So, if you use popUntilGuarded — only the final matching route gets didPopNext.
+If you use popUntil — all routes below will get didPopNext as usual.
 
 **⚠️ The target route must have a name (RouteSettings.name) assigned when pushed.**
 ```dart
@@ -313,7 +318,60 @@ MaterialApp(
 
 **When to use**
 
-Use Navigator.popUntilGuarded for multi-page back navigation (e.g. from page 3 to page 1) when working with RouteBlocListener.
+Use Navigator.popUntilGuarded for multi-page back navigation (e.g. from page 3 to page 1) when working with RouteBlocListener and RouteObserverListener.
+
+
+## RouteObserverListener behavior
+
+By default, RouteObserverListener provides only route lifecycle awareness.
+It does not depend on Bloc and is designed for navigation-related side effects only.
+
+You can safely use the following RouteAware callbacks:
+```dart
+didPush        // called when this route is pushed
+didPushNext    // called when another route is pushed on top
+didPop         // called when this route is popped
+didPopNext     // called when another route above was popped and this route becomes active again
+```
+
+**Example usage**
+
+```dart
+Navigator.of(context).popUntilGuarded('/first');
+```
+```dart
+static MaterialPageRoute route() {
+  return MaterialPageRoute(
+  builder: (BuildContext context) {
+    return FirstPage();
+    },
+    settings: RouteSettings(name: '/first'),
+  );
+}
+
+RouteObserverListener(
+  didPopNext: () {
+    print('✅ Called ONLY on "/first" after popUntilGuarded');
+  },
+  child: FirstPage(),
+);
+```
+```dart
+static MaterialPageRoute route() {
+  return MaterialPageRoute(
+  builder: (BuildContext context) {
+    return FirstPage();
+    },
+    settings: RouteSettings(name: '/second'),
+  );
+}
+RouteObserverListener(
+  didPopNext: () {
+    print('❌ Will NOT be called on this page when using popUntilGuarded');
+  },
+  child: SecondPage(),
+);
+```
 
 ## 💬 Social
 

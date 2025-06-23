@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:route_flutter_bloc/src/route_navigation_blocker.dart';
 import 'package:route_flutter_bloc/src/route_observer_provider.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -200,6 +201,7 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
   bool _isActiveRoute = true;
   String? _routeName;
   late final String? Function(String? route) _selfTriggerCallback;
+  RouteNavigationBlocker? _blocker;
 
   @override
   void initState() {
@@ -219,7 +221,7 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
           }
 
           _routeName = ModalRoute.of(context)?.settings.name;
-          final blocker = RouteObserverProvider.blockerOf(context);
+           _blocker = RouteObserverProvider.blockerOf(context);
 
           _selfTriggerCallback = (String? incomingRoute) {
             final allowTrigger = incomingRoute == _routeName;
@@ -230,7 +232,7 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
             return _routeName;
           };
 
-          blocker?.addTriggerCallback(_selfTriggerCallback);
+          _blocker?.addTriggerCallback(_selfTriggerCallback);
         }
       });
     }
@@ -277,6 +279,7 @@ class _RouteBlocListenerState<B extends StateStreamable<S>, S>
     if (!widget.forceClassicListener) {
       _observer?.unsubscribe(this);
     }
+    _blocker?.removeTriggerCallback(_selfTriggerCallback);
     super.dispose();
   }
 
