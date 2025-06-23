@@ -1,5 +1,9 @@
 # 9.2.1
 
+- Fix Readme.md formatting.
+
+# 9.2.1
+
 Added new widget 'RouteObserverListener'. Performance improvements, and minor bug fixes.
 
 # 9.2.0
