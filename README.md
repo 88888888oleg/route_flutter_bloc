@@ -282,14 +282,10 @@ Navigator.of(context).popUntilGuarded('/home');
 Navigator.of(context).popUntil((route) => route.settings.name == '/home');
 ```
 **Unlike popUntil, which may skip or break listener logic, popUntilGuarded:**
-•	Locks route-aware effects during the transition
-•	Delays listener execution until the target route is fully active
-•	Prevents premature or duplicated didPopNext calls
-When using Navigator.popUntilGuarded('/routeName'), only one route in the stack (the one matched by the name) will receive didPopNext — and only after the first frame.
-All intermediate routes will not receive didPopNext.
-This is intentional and prevents unexpected re-activation logic.
-So, if you use popUntilGuarded — only the final matching route gets didPopNext.
-If you use popUntil — all routes below will get didPopNext as usual.
+When using Navigator.popUntilGuarded('/routeName'), only one route in the stack (the one matched by the name) will receive didPopNext — and only after the first frame.  
+All intermediate routes will not receive didPopNext. This is intentional and prevents unexpected re-activation logic.  
+So, if you use popUntilGuarded — only the final matching route gets didPopNext.  
+If you use popUntil — all routes below will get didPopNext as usual.  
 
 **⚠️ The target route must have a name (RouteSettings.name) assigned when pushed.**
 ```dart
